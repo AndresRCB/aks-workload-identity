@@ -29,6 +29,15 @@ provider "azurerm" {
   }
 }
 
+resource "azurerm_resource_provider_registration" "example" {
+  name = "Microsoft.ContainerService"
+
+  feature {
+    name       = "EnableWorkloadIdentityPreview"
+    registered = true
+  }
+}
+
 # INFRASTRUCTURE STARTS HERE
 
 resource "azurerm_resource_group" "rg" {
@@ -65,6 +74,9 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   dns_prefix                = var.cluster_dns_prefix
   private_cluster_enabled   = true
   sku_tier                  = var.cluster_sku_tier
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
+  
 
   default_node_pool {
     name                   = "default"
