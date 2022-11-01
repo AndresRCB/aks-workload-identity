@@ -1,0 +1,18 @@
+# Required variables
+resource_group_name = "private-aks-rg"
+ssh_key_file = "~/.ssh/id_rsa"
+
+## VALUES BELOW ARE DEFAULT VALUES. UNCOMMENT AND CHANGE TO OVERRIDE
+
+# location = "eastus"
+# cluster_name = "aks-private-cluster"
+# vnet_name = "vnet-private-aks"
+# vnet_cidr = "172.16.0.0/16"
+# subnet_name = "subnet-private-aks"
+# subnet_cidr = "172.16.0.0/20"
+# cluster_identity = "identity-private-aks-cluster"
+# jumpbox_name = "vm-jumpbox"
+# jumpbox_admin_name = "azureuser"
+# jumpbox_size = "Standard_D2s_v3"
+# bastion_public_ip_name = "bastion-ip-aks"
+# bastion_name = "bastion-private-aks"
