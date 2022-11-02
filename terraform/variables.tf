@@ -126,7 +126,11 @@ variable "bastion_name" {
   description = "Name of the Azure Bastion that connects to the cluster's VNET"
   default     = "bastion-private-aks"
 }
-
+variable "cosmosdb_identity" {
+  type        = string
+  description = "Name of the MSI (Managed Service Identity) for the Cosmos DB"
+  default     = "identity-cosmos-db"
+}
 variable "cosmosdb_account_name" {
   type        = string
   description = "Cosmos db account name"

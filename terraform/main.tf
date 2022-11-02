@@ -78,7 +78,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "main" {
 
 ## CLUSTER RESOURCES
 
-resource "azurerm_user_assigned_identity" "main" {
+resource "azurerm_user_assigned_identity" "cluster_identity" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   name                = var.cluster_identity
@@ -104,7 +104,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
 
   identity {
     type = "UserAssigned"
-    identity_ids = [ azurerm_user_assigned_identity.main.id ]
+    identity_ids = [ azurerm_user_assigned_identity.cluster_identity.id ]
   }
 
   network_profile {
@@ -238,11 +238,18 @@ data "azurerm_cosmosdb_account" "main" {
   ]
 }
 
-##Identity 
+##Cosmos DB Identity 
+resource "azurerm_user_assigned_identity" "cosmosdb_identity" {
+  name                = var.cosmosdb_identity
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+}
+
+
 resource "azurerm_role_assignment" "cosmosdb_contributor" {
   scope                = module.azure_cosmos_db.cosmosdb_id
   role_definition_name = "DocumentDB Account Contributor"
-  principal_id         = azurerm_user_assigned_identity.main.principal_id
+  principal_id         = azurerm_user_assigned_identity.cosmosdb_identity.principal_id
   # skip_service_principal_aad_check = true
 }
 
@@ -250,7 +257,7 @@ resource "azurerm_cosmosdb_sql_role_assignment" "example" {
   resource_group_name = azurerm_resource_group.main.name
   account_name        = var.cosmosdb_account_name
   role_definition_id  = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.main.name}/providers/Microsoft.DocumentDB/databaseAccounts/${var.cosmosdb_account_name}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
-  principal_id        = azurerm_user_assigned_identity.main.principal_id
+  principal_id        = azurerm_user_assigned_identity.cosmosdb_identity.principal_id
   scope               = module.azure_cosmos_db.cosmosdb_id
 
   depends_on = [

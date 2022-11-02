@@ -13,28 +13,24 @@ output "cluster-credentials-command" {
   description = "Command to get the cluster's credentials with az cli"
 }
 
-output "managed-identity-client-id" {
-  value = join(" ", ["cat <<EOF | kubectl apply -f -",
-                      "apiVersion: v1",
-                      "kind: ServiceAccount",
-                      "metadata:",
-                      "annotations:",
-                      "azure.workload.identity/client-id: ${azurerm_user_assigned_identity.main.id}",
-                      "labels:",
-                      "azure.workload.identity/use: 'true'",
-                      "name: testserviceaccountname",
-                      "namespace: default",
-                      "EOF"
-          ]) 
-  description = "Bash Command to annotate Kubernetes service account with the client ID of the managed/workload identity "
+output "managed-identity-federated-credential" {
+  value = <<-COMMAND
+        ### Bash Command to annotate Kubernetes service account with the client ID of the managed/workload identity###
+                cat <<EOF | kubectl apply -f -
+                apiVersion: v1
+                kind: ServiceAccount
+                metadata:
+                  annotations:
+                    azure.workload.identity/client-id: ${azurerm_user_assigned_identity.cosmosdb_identity.client_id}
+                  labels:
+                    azure.workload.identity/use: 'true'
+                name: testserviceaccountname
+                namespace: default
+                EOF
+        ### az cli Command to establish federated identity credential ###
+                az identity federated-credential create --name federatedIdentityName --identity-name ${azurerm_user_assigned_identity.cosmosdb_identity.name}
+                --resource-group ${azurerm_resource_group.main.name} --issuer ${azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url} 
+                --subject system:serviceaccount:serviceAccountNamespace:testserviceaccountname
+         COMMAND
+  description = "Command to annotate Kubernetes service account with the client ID of the managed/workload identity "
 }
-
-output "federated-credential" {
-  value = <<EOT
-      az identity federated-credential create --name federatedIdentityName --identity-name ${azurerm_user_assigned_identity.main.name}"
-      --resource-group ${azurerm_resource_group.main.name} --issuer ${azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url} 
-      --subject system:serviceaccount:serviceAccountNamespace:testserviceaccountname
-  EOT
-  description = "Command to establish federated identity credential with az cli"
-}
-##az identity federated-credential create --name federatedIdentityName --identity-name userAssignedIdentityName --resource-group resourceGroupName --issuer ${AKS_OIDC_ISSUER} --subject system:serviceaccount:serviceAccountNamespace:serviceAccountName

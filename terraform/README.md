@@ -60,6 +60,7 @@ Assuming that our SSH key is at `~/.ssh/id_rsa`, we can create a `terraform.tfva
 ```sh
 resource_group_name = "private-aks-rg"
 ssh_key_file = "~/.ssh/id_rsa"
+cosmosdb_account_name = "cosmosdb-acct-test"
 ```
 
 Now you can plan and apply your infrastructure changes by executing `terraform plan` and`terraform apply` commands.
@@ -138,4 +139,38 @@ We're all set now and can use kubectl on our private AKS cluster. To test it, ru
 kubectl get pods -n kube-system
 ```
 
+### Run command annotate Kubernetes service account with the client ID of the managed/workload identity
+[details here](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster)
+update the values for serviceAccountName and serviceAccountNamespace with the Kubernetes service account name and its namespace(here is default)
+```sh
+## Sample output to run in your jump box:
+# cat <<EOF | kubectl apply -f -
+#                apiVersion: v1
+#                kind: ServiceAccount
+#                metadata:
+#                  annotations:
+#                    azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000
+#                  labels:
+#                    azure.workload.identity/use: 'true'
+#                name: testserviceaccountname
+#                namespace: default
+#                EOF
+```
+The following output resembles successful creation of the identity:
+```sh
+# Serviceaccount/workload-identity-sa created
+```
+
+### Run az cli Command to establish federated identity credential
+```sh
+## Sample output to run in your jump box:
+# az identity federated-credential create --name federatedIdentityName --identity-name cosmosdb_identity
+#                --resource-group rg-private-aks-cli --issuer https://eastus.oic.prod-aks.azure.com/0000000-0000-0000-0000-000000000000/0000000-0000-0000-0000-000000000000/
+#                --subject system:serviceaccount:serviceAccountNamespace:testserviceaccountname
+```
+
+## Command to query OIDC issuer
+```sh
+# az aks show -n aks-private-cluster -g rg-private-aks-cli --query "oidcIssuerProfile.issuerUrl" -otsv
+```
 Happy kuberneting!
