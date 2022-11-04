@@ -37,6 +37,11 @@ variable "subnet_cidr" {
   description = "CIDR range for the cluster subnet"
   default     = "172.16.0.0/20"
 }
+variable "private_dns_vnet_link_name" {
+  type        = string
+  description = "Private DNS Zone Link Name"
+  default     = "sqlapi_zone_link"
+}
 
 variable "cluster_name" {
   type        = string
@@ -120,4 +125,45 @@ variable "bastion_name" {
   type        = string
   description = "Name of the Azure Bastion that connects to the cluster's VNET"
   default     = "bastion-private-aks"
+}
+variable "cosmosdb_identity" {
+  type        = string
+  description = "Name of the MSI (Managed Service Identity) for the Cosmos DB"
+  default     = "identity-cosmos-db"
+}
+variable "cosmosdb_account_name" {
+  type        = string
+  description = "Cosmos db account name"
+}
+
+variable "dns_zone_group_name" {
+  type        = string
+  description = "Zone Group Name for PE"
+  default     = "pe_zone_group"
+}
+
+variable "pe_name" {
+  type        = string
+  description = "Private Endpoint Name"
+  default     = "cosmosdb_pe"
+}
+
+variable "pe_connection_name" {
+  type        = string
+  description = "Private Endpoint Connection Name"
+  default     = "pe_connection"
+}
+
+variable "throughput" {
+  type        = number
+  description = "Cosmos DB database throughput"
+  default     = 400
+  validation {
+    condition     = var.throughput >= 400 && var.throughput <= 1000000
+    error_message = "Cosmos db manual throughput should be equal to or greater than 400 and less than or equal to 1000000."
+  }
+  validation {
+    condition     = var.throughput % 100 == 0
+    error_message = "Cosmos db throughput should be in increments of 100."
+  }
 }
