@@ -57,6 +57,8 @@ Now that we can execute the terraform commands needed to bring out the Azure inf
 
 Assuming that our SSH key is at `~/.ssh/id_rsa`, we can create a `terraform.tfvars` file to avoid having to pass them in the CLI, setting them as environment variables or being prompted by them when running terraform plan/apply (to override other values, check out the sample file).
 
+Remember that the `cosmosdb_account_name` value needs to be globally unique (across all of azure), so you need to use a very specific name to your account (a recommendation is to use your username, company name, domain, etc.).
+
 ```sh
 resource_group_name = "private-aks-rg"
 ssh_key_file = "~/.ssh/id_rsa"
@@ -68,8 +70,20 @@ Now you can plan and apply your infrastructure changes by executing `terraform p
 ```sh
 terraform plan
 # Check your plan and feel free to use it in the next command (we're just running apply as-is)
+# SEE IMPORTANT NOTE BELOW IF YOU GET AN ERROR ABOUT "provider registration"
+# SEE IMPORTANT 2 NOTE BELOW ABOUT LONG TIME CREATIONG AZURE BASTION
 terraform apply
 ```
+
+### IMPORTANT
+When you run terraform plan or apply, you might see an error that a provider is already registered. If that is the case, you'll need to import it into your state. In this case, is very likely to be the "ContainerService" provider, so your import command will look like the one below, but **you'll need to replace the subscription ID below with your own**.
+
+```sh
+terraform import azurerm_resource_provider_registration.container_service /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.ContainerService
+```
+
+### IMPORTANT 2
+Azure Bastion takes a long time to create. Your terraform tool might just stop waiting for a "resource created" response after a while and you could get an error. That's fine. Run terraform apply again after a few minutes and keep waiting. The resource creation will either have finished or the wait will resume. Either way, you'll resources will be created as desired.
 
 ## Connecting to the control plane (using the cluster)
 Our cluster has been created; however, because it's a private cluster, the control plane is not accessible through the internet (i.e., our admin device). This is by design and desirable for security, so we'll have to access it indirectly through Azure-provided tooling.
@@ -173,4 +187,5 @@ The following output resembles successful creation of the identity:
 ```sh
 # az aks show -n aks-private-cluster -g rg-private-aks-cli --query "oidcIssuerProfile.issuerUrl" -otsv
 ```
+
 Happy kuberneting!
