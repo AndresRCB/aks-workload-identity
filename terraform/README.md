@@ -96,7 +96,7 @@ I recommend two options to connect to the cluster:
 We can run `kubectl` commands in a private AKS cluster by using [command invoke](https://docs.microsoft.com/en-us/azure/aks/command-invoke). We will need to pass inputs such as file names in both the `kubectl` command and in the az wrapper command, but it makes things simple when we only need to take a quick action in the cluster. Here's an example:
 ```sh
 # Get the proper command with infra parameters using terraform output
-terraform output -raw cluster-invoke-command
+terraform output -raw cluster_invoke_command
 
 # Basic command example
 az aks command invoke \
@@ -124,7 +124,7 @@ An Azure Bastion and a Jumpbox are part of the terraform files in this section. 
 #                 --username $JUMPBOX_ADMIN_NAME \
 #                 --ssh-key ~/.ssh/id_rsa 
 # To get the command, use terraform output:
-$(terraform output -raw jumpbox-login-command)
+$(terraform output -raw jumpbox_login_command)
 ```
 
 At this point, we have logged into our jump box via SSH and can execute commands. This machine will not have Azure CLI or kubectl installed, so we need to set it up. We just need to run the following commands in the VM **in order** (follow instructions as needed):
@@ -142,7 +142,7 @@ Finally, we need to get the k8s cluster credentials. Because our environment was
 
 ```sh
 # Get cluster credentials for kubectl
-terraform output -raw cluster-credentials-command
+terraform output -raw cluster_credentials_command
 
 ## Sample output to run in your jump box:
 # az aks get-credentials --resource-group rg-private-aks-cli --name aks-private-cluster
