@@ -96,7 +96,7 @@ I recommend two options to connect to the cluster:
 We can run `kubectl` commands in a private AKS cluster by using [command invoke](https://docs.microsoft.com/en-us/azure/aks/command-invoke). We will need to pass inputs such as file names in both the `kubectl` command and in the az wrapper command, but it makes things simple when we only need to take a quick action in the cluster. Here's an example:
 ```sh
 # Get the proper command with infra parameters using terraform output
-terraform output -raw cluster-invoke-command
+terraform output -raw cluster_invoke_command
 
 # Basic command example
 az aks command invoke \
@@ -124,7 +124,7 @@ An Azure Bastion and a Jumpbox are part of the terraform files in this section. 
 #                 --username $JUMPBOX_ADMIN_NAME \
 #                 --ssh-key ~/.ssh/id_rsa 
 # To get the command, use terraform output:
-$(terraform output -raw jumpbox-login-command)
+$(terraform output -raw jumpbox_login_command)
 ```
 
 At this point, we have logged into our jump box via SSH and can execute commands. This machine will not have Azure CLI or kubectl installed, so we need to set it up. We just need to run the following commands in the VM **in order** (follow instructions as needed):
@@ -142,7 +142,7 @@ Finally, we need to get the k8s cluster credentials. Because our environment was
 
 ```sh
 # Get cluster credentials for kubectl
-terraform output -raw cluster-credentials-command
+terraform output -raw cluster_credentials_command
 
 ## Sample output to run in your jump box:
 # az aks get-credentials --resource-group rg-private-aks-cli --name aks-private-cluster
@@ -153,39 +153,42 @@ We're all set now and can use kubectl on our private AKS cluster. To test it, ru
 kubectl get pods -n kube-system
 ```
 
-### Run command annotate Kubernetes service account with the client ID of the managed/workload identity
-[details here](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster)
-update the values for serviceAccountName and serviceAccountNamespace with the Kubernetes service account name and its namespace(here is default)
+### Run command to annotate Kubernetes service account with the client ID of the managed/workload identity
+[Details here](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster).
+Update the values for serviceAccountName, client-id and serviceAccountNamespace with the Kubernetes service account name and its namespace (here we use testserviceaccountname, 000...000 and default):
 ```sh
 ## Sample output to run in your jump box:
-# cat <<EOF | kubectl apply -f -
-#                apiVersion: v1
-#                kind: ServiceAccount
-#                metadata:
-#                  annotations:
-#                    azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000
-#                  labels:
-#                    azure.workload.identity/use: 'true'
-#                name: testserviceaccountname
-#                namespace: default
-#                EOF
+cat <<EOF | kubectl apply -f -
+               apiVersion: v1
+               kind: ServiceAccount
+               metadata:
+                 annotations:
+                   azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000
+                 labels:
+                   azure.workload.identity/use: 'true'
+               name: testserviceaccountname
+               namespace: default
+               EOF
 ```
 The following output resembles successful creation of the identity:
 ```sh
 # Serviceaccount/workload-identity-sa created
 ```
 
-### Run az cli Command to establish federated identity credential
+### Command to query OIDC issuer
+You need to get your own OIDC issuer URL. Use the command belo for that
 ```sh
-## Sample output to run in your jump box:
-# az identity federated-credential create --name federatedIdentityName --identity-name cosmosdb_identity
-#                --resource-group rg-private-aks-cli --issuer https://eastus.oic.prod-aks.azure.com/0000000-0000-0000-0000-000000000000/0000000-0000-0000-0000-000000000000/
-#                --subject system:serviceaccount:serviceAccountNamespace:testserviceaccountname
+az aks show -n aks-private-cluster -g rg-private-aks-cli --query "oidcIssuerProfile.issuerUrl" -otsv
 ```
 
-## Command to query OIDC issuer
+### Run az cli Command to establish federated identity credential
+Run the following command with your own values (identity-name, resource-group, issues and service account details)
+
 ```sh
-# az aks show -n aks-private-cluster -g rg-private-aks-cli --query "oidcIssuerProfile.issuerUrl" -otsv
+## Sample command to run in your jump box:
+az identity federated-credential create --name federatedIdentityName --identity-name cosmosdb_identity
+               --resource-group rg-private-aks-cli --issuer https://eastus.oic.prod-aks.azure.com/0000000-0000-0000-0000-000000000000/0000000-0000-0000-0000-000000000000/
+               --subject system:serviceaccount:serviceAccountNamespace:testserviceaccountname
 ```
 
 Happy kuberneting!
