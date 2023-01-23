@@ -1,6 +1,8 @@
 # Required variables
-resource_group_name = "aks-workload-identity-rg"
-keyvault_name = "GLOBALLYUNIQUENAMEHERE"
+
+# Required variables if commented out
+# ssh_key_file = "~/.ssh/id_rsa"
+# cosmosdb_account_name = "cosmosdb-acct-test"
 
 ## VALUES BELOW ARE DEFAULT VALUES. UNCOMMENT AND CHANGE TO OVERRIDE
 

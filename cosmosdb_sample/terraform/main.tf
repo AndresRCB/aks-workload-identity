@@ -26,18 +26,13 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.main.kube_config.host.cluster_ca_certificate)
 }
 
+data "azurerm_resource_group" "main" {
+  name = var.resource_group_name
+}
+
 data "azurerm_kubernetes_cluster" "main" {
   name                = var.aks_cluster_name
   resource_group_name = var.resource_group_name
-}
-
-data "azurerm_cosmosdb_account" "main" {
-  name = var.cosmosdb_account_name
-  resource_group_name = var.resource_group_name
-}
-
-data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
 }
 
 resource "azurerm_user_assigned_identity" "cosmosdb_client" {
@@ -61,28 +56,23 @@ resource "azurerm_cosmosdb_sql_role_assignment" "example" {
   scope               = data.azurerm_cosmosdb_account.main.id
 }
 
-## NOTE/TODO: I didn't find the one to replace the CLI command for this.
-## NEED TO DIG DEEPER
+resource "azurerm_federated_identity_credential" "keyvault" {
+  name                = var.federated_identity_credential_name
+  resource_group_name = data.azurerm_resource_group.main.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = data.azurerm_kubernetes_cluster.main.oidc_issuer_url
+  parent_id           = azurerm_user_assigned_identity.cosmosdb_client.id
+  subject             = "system:serviceaccount:${var.cosmosdb_client_namespace}:${var.kubernetes_service_account_name}"
+}
 
-# resource "azuread_application_federated_identity_credential" "main" {
-#   application_object_id = NOPE
-# #   audiences             = ["api://AzureADTokenExchange"]
-#   issuer                = data.azurerm_kubernetes_cluster.main.oidc_issuer_url
-#   # May want to parametrize the values below (including creating a namespace)
-#   subject               = "system:serviceaccount:default:serviceaccountname"
-# }
-
-# Probably want to change to a kubernetes job which runs once or something
-# that takes a request and then runs the cosmos changes. Right now, this will not
-# stay running because it's a one-off client.
 resource "kubernetes_deployment" "cosmosdb_client" {
   metadata {
     name = "cosmosdb-client"
     labels = {}
-    namespace = "default"
+    namespace = var.cosmosdb_client_namespace
   }
 
-  namespace = "default"
+  namespace = var.cosmosdb_client_namespace
 
   spec {
     replicas = 1
