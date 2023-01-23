@@ -116,7 +116,8 @@ az aks show -n aks-private-cluster -g rg-private-aks-cli --query "oidcIssuerProf
 ```
 
 ### Run az cli Command to establish federated identity credential
-Run the following command with your own values (identity-name, resource-group, issues and service account details)
+**Note**: terraform is doing this step for you, so only follow the instructions below to set up new identities. In other words, the portion below is for reference! 
+You can run the following command with your own values (identity-name, resource-group, issues and service account details)
 
 ```sh
 ## Sample command to run in your jump box:
