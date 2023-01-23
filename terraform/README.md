@@ -65,15 +65,7 @@ Now you can plan and apply your infrastructure changes by executing `terraform p
 ```sh
 terraform plan
 # Check your plan and feel free to use it in the next command (we're just running apply as-is)
-# SEE IMPORTANT NOTE BELOW IF YOU GET AN ERROR ABOUT "provider registration"
 terraform apply
-```
-
-### IMPORTANT
-When you run terraform plan or apply, you might see an error that a provider is already registered. If that is the case, you'll need to import it into your state. In this case, is very likely to be the "ContainerService" provider, so your import command will look like the one below, but **you'll need to replace the subscription ID below with your own**.
-
-```sh
-terraform import azurerm_resource_provider_registration.container_service /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.ContainerService
 ```
 
 ## Connecting to the control plane (using the cluster)
