@@ -62,14 +62,19 @@ keyvault_name = "GLOBALLYUNIQUENAMEHERE"
 
 Now you can plan and apply your infrastructure changes by executing `terraform plan` and`terraform apply` commands.
 
+**IMPORTANT**: Due to [limitations on the kuberentes provider](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/guides/alpha-manifest-migration-guide#mixing-kubernetes_manifest-with-other-kubernetes_-resources), you need to run plan or apply in two separate steps. TL;DR: the cluster must be created before kubernetes resources if the `kubernetes_manifest` resource is used.
+
 ```sh
+terraform plan -target="module.public_aks_cluster"
+# Make sure everthing's good
+terraform apply -target="module.public_aks_cluster" -auto-approve
 terraform plan
-# Check your plan and feel free to use it in the next command (we're just running apply as-is)
-terraform apply
+# Again, make sure everthing's good
+terraform apply -auto-approve
 ```
 
 ## Connecting to the control plane (using the cluster)
-Our cluster has been created; however, because it's a private cluster, the control plane is only accessible from the IP address of the terraform client who executed this code. We first need to get the k8s cluster credentials, though.
+Our cluster has been created and, for security reasons, the control plane is only accessible from the IP address of the terraform client who executed this code. As long as you're using the same client that executed terraform apply, you can now connect to the cluster by following these steps:
 
 ```sh
 ## Install kubectl
@@ -78,7 +83,7 @@ sudo az aks install-cli
 $(terraform output -raw cluster_credentials_command)
 
 ## Sample output of executed command:
-# az aks get-credentials --resource-group rg-private-aks-cli --name aks-private-cluster
+# az aks get-credentials --resource-group RESOURCE_GROUP_NAME --name CLUSTER_NAME
 ```
 
 We're all set now and can use kubectl on our AKS cluster. To test it, run the following command to get the pods on all namespaces:
@@ -87,43 +92,13 @@ We're all set now and can use kubectl on our AKS cluster. To test it, run the fo
 kubectl get pods -A
 ```
 
-### Run command to annotate Kubernetes service account with the client ID of the managed/workload identity
-[Details here](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster).
-Update the values for serviceAccountName, client-id and serviceAccountNamespace with the Kubernetes service account name and its namespace (here we use testserviceaccountname, 000...000 and default):
+### Run command to verify that your kubenetes workload can reach the secret stored in key vault
+
+You just need to execute a `kubectl exec` command that will print the secret value mounted in an nginx pod. There is a terraform `output` to make your life easy if you want to get the command for your setup:
 ```sh
-## Sample output to run in your jump box:
-cat <<EOF | kubectl apply -f -
-               apiVersion: v1
-               kind: ServiceAccount
-               metadata:
-                 annotations:
-                   azure.workload.identity/client-id: 00000000-0000-0000-0000-000000000000
-                 labels:
-                   azure.workload.identity/use: 'true'
-               name: testserviceaccountname
-               namespace: default
-               EOF
-```
-The following output resembles successful creation of the identity:
-```sh
-# Serviceaccount/workload-identity-sa created
+terraform output print_keyvault_secret_command
 ```
 
-### Command to query OIDC issuer
-You need to get your own OIDC issuer URL. Use the command belo for that
-```sh
-az aks show -n aks-private-cluster -g rg-private-aks-cli --query "oidcIssuerProfile.issuerUrl" -otsv
-```
-
-### Run az cli Command to establish federated identity credential
-**Note**: terraform is doing this step for you, so only follow the instructions below to set up new identities. In other words, the portion below is for reference! 
-You can run the following command with your own values (identity-name, resource-group, issues and service account details)
-
-```sh
-## Sample command to run in your jump box:
-az identity federated-credential create --name federatedIdentityName --identity-name cosmosdb_identity
-               --resource-group rg-private-aks-cli --issuer https://eastus.oic.prod-aks.azure.com/0000000-0000-0000-0000-000000000000/0000000-0000-0000-0000-000000000000/
-               --subject system:serviceaccount:serviceAccountNamespace:testserviceaccountname
-```
+After running that command, you should see the value of the secret stored in keyvault (by default, it is `AKSWIandKeyVaultIntegrated!`).
 
 Happy kuberneting!

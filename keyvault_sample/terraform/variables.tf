@@ -5,7 +5,7 @@ variable "aks_cluster_name" {
 
 variable "resource_group_name" {
   type = string
-  description = "Name of the resource group where the AKS cluster and Cosmos DB account are"
+  description = "Name of the resource group where the AKS cluster and Azure Key Vault are"
 }
 
 variable "keyvault_name" {

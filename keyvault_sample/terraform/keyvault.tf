@@ -53,3 +53,9 @@ resource "azurerm_key_vault" "main" {
   }
   tags = {}
 }
+
+resource "azurerm_key_vault_secret" "main" {
+  name         = local.secret_name
+  value        = local.secret_value
+  key_vault_id = azurerm_key_vault.main.id
+}

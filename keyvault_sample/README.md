@@ -1,4 +1,4 @@
-# Using Workload Identity From an AKS Deployment to Connect to Cosmos DB
+# Using Workload Identity From an AKS Deployment to Connect to Azure Key Vault
 
 ## WARNING
 This folder is still in development. It was merged to main to avoid losing sample files and client code used in testing. This sample might be deprecated in favor of simpler tests such as printing secrets from Azure Key Vault.

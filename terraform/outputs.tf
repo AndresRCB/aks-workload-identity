@@ -27,3 +27,8 @@ output "cluster_oidc_issuer_url" {
   value = module.public_aks_cluster.oidc_issuer_url
   description = "URL of the OIDC issuer in the cluster (used for workload identity)"
 }
+
+output "print_keyvault_secret_command" {
+  value = module.keyvault_setup.print_keyvault_secret_command
+  description = "Command to print the keyvault secret mounted in the kubernetes client deployment (a test)"
+}
