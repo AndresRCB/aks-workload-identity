@@ -6,17 +6,7 @@ This section shows how to deploy and manage a private AKS cluster using your loc
 - A console (bash or zsh in this case) where you have admin rights
 - An Azure subscription
 - [Terraform CLI](https://www.terraform.io/downloads)
-- **IMPORTANT** In order to use this with any Azure subscription, you need to enable workload identity preview. Follow the steps [here](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag) to do that. The TL;DR is to run the following commands:
-```sh
-az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
-# Run the following command until you see that the feature is "Registered" (will take a few minutes)
-az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
-# Once the feature is registered, run this command to refresh the provider registration
-az provider register --namespace "Microsoft.ContainerService"
-# Check the status of the provider by running this command
-az provider show --namespace "Microsoft.ContainerService" --query registrationState
-```
-
+- See note below about registering providers.
 
 ## Setting up the environment
 Once you have an [Azure account](https://azure.microsoft.com/en-us/free/search/), an Azure subscription, and can sign into the [Azure Portal](https://portal.azure.com/), open a console session.
@@ -39,7 +29,25 @@ az account show -o table
 # az account set -n YOUR_SUBSCRIPTION_NAME
 ```
 
-Once Azure CLI is authenticated, the Terraform CLI tool will use your azure credentials to manage infrastructure. Now you are ready to start deploying infrastructure with Terraform.
+**IMPORTANT** In order to use this with any Azure subscription, you need to enable workload identity preview. Follow the steps [here](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag) to do that. The TL;DR is to run the following commands:
+```sh
+az feature register --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+# Run the following command until you see that the feature is "Registered" (will take a few minutes)
+az feature show --namespace "Microsoft.ContainerService" --name "EnableWorkloadIdentityPreview"
+
+# Once the feature is registered, run this command to refresh the provider registration
+# And while you're at it, run the following two as well to register all providers
+az provider register --namespace "Microsoft.ContainerService"
+az provider register --namespace "Microsoft.Network"
+az provider register --namespace "Microsoft.KeyVault"
+
+# Check the registration status of the providers by running this command (all must be registered)
+az provider show --namespace "Microsoft.ContainerService" --query registrationState
+az provider show --namespace "Microsoft.Network" --query registrationState
+az provider show --namespace "Microsoft.KeyVault" --query registrationState
+```
+
+Once Azure CLI is authenticated and your providers are registered, the Terraform CLI tool will use your azure credentials to manage infrastructure. Now you are ready to start deploying infrastructure with Terraform.
 
 ### Executing the terraform scripts
 First, clone this repository and go into the `terraform/` folder.
