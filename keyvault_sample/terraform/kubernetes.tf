@@ -53,9 +53,16 @@ resource "kubernetes_manifest" "secret_provider_class" {
   }
 }
 
+# Need a delay because federated identity credentials shouldn't be used right after creation (must wait a few seconds)
+resource "time_sleep" "wait_20_seconds" {
+  depends_on = [azurerm_federated_identity_credential.keyvault]
+  create_duration = "20s"
+}
+
 resource "kubernetes_deployment" "keyvault_client" {
   depends_on = [
-    azurerm_key_vault_secret.main
+    azurerm_key_vault_secret.main,
+    time_sleep.wait_20_seconds
   ]
 
   metadata {

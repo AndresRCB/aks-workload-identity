@@ -44,6 +44,7 @@ resource "azurerm_federated_identity_credential" "keyvault" {
   subject             = "system:serviceaccount:${var.keyvault_client_namespace}:${var.kubernetes_service_account_name}"
 
   depends_on = [
-    kubernetes_service_account.keyvault_client
+    kubernetes_service_account.keyvault_client,
+    data.azurerm_kubernetes_cluster.main
   ]
 }
