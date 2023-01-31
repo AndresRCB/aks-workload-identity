@@ -28,6 +28,7 @@ module "keyvault_setup" {
   source = "../keyvault_sample/terraform"
 
   resource_group_name = azurerm_resource_group.main.name
+  location = azurerm_resource_group.main.location
   aks_cluster_name = module.public_aks_cluster.name
   keyvault_name = var.keyvault_name
   
@@ -40,6 +41,7 @@ module "nginx_ingress" {
   source = "../nginx_ingress/terraform"
 
   resource_group_name = azurerm_resource_group.main.name
+  location = azurerm_resource_group.main.location
   aks_cluster_name = module.public_aks_cluster.name
   keyvault_name = var.keyvault_name
   

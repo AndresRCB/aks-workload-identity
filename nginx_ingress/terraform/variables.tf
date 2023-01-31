@@ -8,6 +8,11 @@ variable "resource_group_name" {
   description = "Name of the resource group where the AKS cluster and Azure Key Vault are"
 }
 
+variable "location" {
+  type = string
+  description = "Azure region for all resources"
+}
+
 variable "keyvault_name" {
   type = string
   description = "Globally unique name to give to the Key Vault instance"

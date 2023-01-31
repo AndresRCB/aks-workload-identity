@@ -21,7 +21,6 @@ resource "kubernetes_namespace" "main" {
   }
 }
 
-
 resource "kubernetes_manifest" "secret_provider_class" {
   depends_on = [
     azurerm_federated_identity_credential.main,
@@ -61,7 +60,7 @@ resource "kubernetes_manifest" "secret_provider_class" {
         objects = <<EOF
           array:
             - |
-              objectName: randomSecret
+              objectName: ${var.ingress_cert_name}
               objectType: secret
         EOF
       }

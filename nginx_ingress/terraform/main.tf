@@ -23,10 +23,6 @@ locals {
   # secret_value = "AKSWIandKeyVaultIntegrated!"
 }
 
-data "azurerm_resource_group" "main" {
-  name = var.resource_group_name
-}
-
 data "azurerm_kubernetes_cluster" "main" {
   name                = var.aks_cluster_name
   resource_group_name = var.resource_group_name
@@ -36,13 +32,18 @@ data "azurerm_client_config" "current" {}
 
 resource "azurerm_user_assigned_identity" "main" {
   name                = var.ingress_identity_name
-  resource_group_name = data.azurerm_resource_group.main.name
-  location            = data.azurerm_resource_group.main.location
+  resource_group_name = var.resource_group_name
+  location            = var.location
+}
+
+resource "time_sleep" "wait_30_seconds" {
+  depends_on = [azurerm_federated_identity_credential.main]
+  create_duration = "30s"
 }
 
 resource "azurerm_federated_identity_credential" "main" {
   name                = var.federated_identity_credential_name
-  resource_group_name = data.azurerm_resource_group.main.name
+  resource_group_name = var.resource_group_name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = data.azurerm_kubernetes_cluster.main.oidc_issuer_url
   parent_id           = azurerm_user_assigned_identity.main.id
@@ -63,7 +64,17 @@ resource "helm_release" "application" {
   verify           = false
   values           = [file("${path.module}/values.yaml")]
 
+  set {
+    name = "serviceAccount.create"
+    value = "false"
+  }
+
+  set {
+    name = "serviceAccount.name"
+    value = var.kubernetes_service_account_name
+  }
+
   depends_on = [
-    azurerm_federated_identity_credential.main
+    time_sleep.wait_30_seconds
   ]
 }
