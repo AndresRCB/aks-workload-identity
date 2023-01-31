@@ -35,3 +35,15 @@ module "keyvault_setup" {
     module.public_aks_cluster
   ]
 }
+
+module "nginx_ingress" {
+  source = "../nginx_ingress/terraform"
+
+  resource_group_name = azurerm_resource_group.main.name
+  aks_cluster_name = module.public_aks_cluster.name
+  keyvault_name = var.keyvault_name
+  
+  depends_on = [
+    module.keyvault_setup
+  ]
+}
