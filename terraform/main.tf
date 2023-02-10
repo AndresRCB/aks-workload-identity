@@ -9,6 +9,7 @@ module "public_aks_cluster" {
   source = "github.com/AndresRCB/aks-public-cluster"
 
   resource_group_name = azurerm_resource_group.main.name
+  authorized_ip_cidr_range = var.authorized_ip_cidr_range
   
   depends_on = [
     azurerm_resource_group.main
@@ -44,6 +45,7 @@ module "nginx_ingress" {
   location = azurerm_resource_group.main.location
   aks_cluster_name = module.public_aks_cluster.name
   keyvault_name = var.keyvault_name
+  keyvault_id = module.keyvault_setup.keyvault_id
   
   depends_on = [
     module.keyvault_setup

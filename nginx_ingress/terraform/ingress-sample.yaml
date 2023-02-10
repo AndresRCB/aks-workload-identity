@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: ingress-nginx
+  name: ingress-hello-world
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - demo.arcb.io
+    secretName: ingress-tls-csi
+  rules:
+  - host: demo.arcb.io
+    http:
+      paths:
+      # - path: /hello-world(/|$)(.*)
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: aks-helloworld
+      #       port:
+      #         number: 80
+      - path: /(.*)
+        pathType: Prefix      
+        backend:
+          service:
+            name: aks-helloworld
+            port:
+              number: 80

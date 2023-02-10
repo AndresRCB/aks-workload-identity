@@ -54,7 +54,7 @@ resource "azurerm_federated_identity_credential" "main" {
   ]
 }
 
-resource "helm_release" "application" {
+resource "helm_release" "ingress_nginx" {
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
@@ -75,6 +75,7 @@ resource "helm_release" "application" {
   }
 
   depends_on = [
-    time_sleep.wait_30_seconds
+    time_sleep.wait_30_seconds,
+    azurerm_key_vault_certificate.main
   ]
 }

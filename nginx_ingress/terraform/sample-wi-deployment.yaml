@@ -2,7 +2,7 @@ kind: Pod
 apiVersion: v1
 metadata:
   name: busybox-secrets-store-inline
-  namespace : default # CHANGE
+  namespace: ingress-nginx
 spec:
   serviceAccountName: keyvaultclient
   containers:

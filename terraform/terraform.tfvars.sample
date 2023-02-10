@@ -2,8 +2,10 @@
 resource_group_name = "aks-workload-identity-rg"
 keyvault_name = "GLOBALLYUNIQUENAMEHERE"
 
+
 ## VALUES BELOW ARE DEFAULT VALUES. UNCOMMENT AND CHANGE TO OVERRIDE
 
+# authorized_ip_cidr_range = ""
 # location = "eastus"
 # cluster_name = "aks-private-cluster"
 # vnet_name = "vnet-private-aks"

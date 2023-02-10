@@ -10,7 +10,7 @@ controller:
     type: LoadBalancer
     annotations:
       service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz"
-      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
   extraVolumes:
       - name: secrets-store-inline
         csi:

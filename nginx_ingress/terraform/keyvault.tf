@@ -1,10 +1,5 @@
-data "azurerm_key_vault" "main" {
-  name                = var.keyvault_name
-  resource_group_name = var.resource_group_name
-}
-
 resource "azurerm_key_vault_access_policy" "main" {
-  key_vault_id = data.azurerm_key_vault.main.id
+  key_vault_id = var.keyvault_id
   object_id = azurerm_user_assigned_identity.main.principal_id
   tenant_id = azurerm_user_assigned_identity.main.tenant_id
 
@@ -26,7 +21,7 @@ resource "azurerm_key_vault_access_policy" "main" {
 
 resource "azurerm_key_vault_certificate" "main" {
   name         = var.ingress_cert_name
-  key_vault_id = data.azurerm_key_vault.main.id
+  key_vault_id = var.keyvault_id
 
   certificate_policy {
     issuer_parameters {

@@ -18,6 +18,11 @@ variable "keyvault_name" {
   description = "Globally unique name to give to the Key Vault instance"
 }
 
+variable "keyvault_id" {
+  type = string
+  description = "Resource ID for the used keyvault (same with var.keyvault_name)"
+}
+
 variable "ingress_cert_name" {
   type = string
   description = "Name of the ingress TLS certificate in Key Vault"
