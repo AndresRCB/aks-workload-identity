@@ -32,3 +32,8 @@ output "print_keyvault_secret_command" {
   value = module.keyvault_setup.print_keyvault_secret_command
   description = "Command to print the keyvault secret mounted in the kubernetes client deployment (a test)"
 }
+
+output "ingress_nginx_public_ip_address" {
+  value = module.nginx_ingress.ingress_ip_address
+  description = "Public IP address of the Azure Load Balancer created by ingress-nginx-controller"
+}

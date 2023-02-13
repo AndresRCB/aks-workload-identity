@@ -18,26 +18,43 @@ variable "keyvault_name" {
   description = "Globally unique name to give to the Key Vault instance"
 }
 
-variable "keyvault_identity_name" {
+variable "keyvault_id" {
+  type = string
+  description = "Resource ID for the used keyvault (same with var.keyvault_name)"
+}
+
+variable "ingress_cert_name" {
+  type = string
+  description = "Name of the ingress TLS certificate in Key Vault"
+  default = "ingress-nginx"
+}
+
+variable "ingress_cert_cn" {
+  type = string
+  description = "Common Name (CN) of the ingress TLS certificate"
+  default = "testdomain.com"
+}
+
+variable "ingress_identity_name" {
   type = string
   description = "Name to give to the managed identity with Key Vault permissions"
-  default = "keyvault-client"
+  default = "ingress-nginx"
 }
 
 variable "kubernetes_service_account_name" {
   type = string
   description = "Name to give to the kubernetes service account to map to a user managed identity"
-  default = "keyvaultclient"
+  default = "ingressnginx"
 }
 
 variable "federated_identity_credential_name" {
   type = string
   description = "Name of the Federated Identity Credential to use from AKS to connect to Azure Key Vault."
-  default = "aksToKeyvaultFederatedIdentity"
+  default = "ingressToKeyvaultFederatedIdentity"
 }
 
-variable "keyvault_client_namespace" {
+variable "ingress_namespace" {
   type = string
-  description = "Kubernetes namespace to create and use for the keyvault client workload and service account"
-  default = "keyvault-client"
+  description = "Kubernetes namespace to create for ingress-nginx resources"
+  default = "ingress-nginx"
 }
