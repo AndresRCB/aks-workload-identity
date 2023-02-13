@@ -130,6 +130,9 @@ resource "kubernetes_service_v1" "aks_helloworld" {
 }
 
 resource "kubernetes_ingress_v1" "aks_helloworld" {
+  depends_on = [
+    helm_release.ingress_nginx
+  ]
   wait_for_load_balancer = true
   metadata {
     namespace = var.ingress_namespace
@@ -142,14 +145,16 @@ resource "kubernetes_ingress_v1" "aks_helloworld" {
     ingress_class_name = "nginx"
     tls {
       hosts = [
-        "demo.arcb.io"
+        "domain.hello.world"
       ]
       secret_name = local.ingress_secret_name
     }
     rule {
+      host = "domain.hello.world"
       http {
         path {
           path = "/(.*)"
+          path_type = "Prefix"
           backend {
             service {
               name = kubernetes_service_v1.aks_helloworld.metadata.0.name

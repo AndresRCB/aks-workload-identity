@@ -109,4 +109,20 @@ terraform output print_keyvault_secret_command
 
 After running that command, you should see the value of the secret stored in keyvault (by default, it is `AKSWIandKeyVaultIntegrated!`).
 
+### Check that you can reach the hello world service with your own ingress-nginx certificate
+
+Get the public IP address of the ingress-nginx-controller, which is the entrypoint to ingress objects in this example namespace:
+```sh
+export INGRESS_IP_ADDRESS=$(terraform output -raw ingress_nginx_public_ip_address)
+echo $INGRESS_IP_ADDRESS
+```
+
+Then, use `curl` to hit the endpoint while resolving to one of our self-signed cert's alternative names:
+
+```sh
+curl -v -k --resolve domain.hello.world:443:$INGRESS_IP_ADDRESS https://domain.hello.world/
+```
+
+You should see "subkect: CN=testdomain.com" in the output of the verbose curl response.
+
 Happy kuberneting!
