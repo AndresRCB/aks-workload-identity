@@ -123,6 +123,6 @@ Then, use `curl` to hit the endpoint while resolving to one of our self-signed c
 curl -v -k --resolve domain.hello.world:443:$INGRESS_IP_ADDRESS https://domain.hello.world/
 ```
 
-You should see "subkect: CN=testdomain.com" in the output of the verbose curl response.
+You should see "subject: CN=testdomain.com" in the output of the verbose curl response.
 
 Happy kuberneting!
